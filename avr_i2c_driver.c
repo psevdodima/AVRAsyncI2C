@@ -27,9 +27,9 @@
 prj_com_op_res_et i2c_drv_trans_plus_byte (i2c_drv_st* drv, i2c_addr_t addr, uint8_t* data, uint8_t size, uint8_t byte)
 {
 	CBufWriteByte(&drv->_transmit_buf, size + 1);
-	#if AVR_I2C_DRV_DEBUG
-		printf("I2C Start Queue WRITE plus byte (0x%X) OPERATION...\r\n", addr);
-	#endif
+#if AVR_I2C_DRV_DEBUG
+	printf("I2C Start Queue WRITE plus byte (0x%X) OPERATION...\r\n", addr);
+#endif
 	CBufWriteByte(&drv->_transmit_buf, addr & (~0x01));
 	CBufWriteByte(&drv->_transmit_buf, byte);
 	CBufWrite(&drv->_transmit_buf, data, size);
@@ -41,15 +41,15 @@ prj_com_op_res_et operate_start (i2c_drv_st* drv, i2c_addr_t addr, const uint8_t
 {
 	CBufWriteByte(&drv->_transmit_buf, size);
 	if(is_read){
-		#if AVR_I2C_DRV_DEBUG
-			printf("I2C Start Queue READ (0x%X) OPERATION...\r\n", addr);
-		#endif
+#if AVR_I2C_DRV_DEBUG
+		printf("I2C Start Queue READ (0x%X) OPERATION...\r\n", addr);
+	if
 		CBufWriteByte(&drv->_transmit_buf, addr | (0x01));
 		CBufWriteByte(&drv->_transmit_buf, tr_uuid);
 	} else {
-		#if AVR_I2C_DRV_DEBUG
-			printf("I2C Start Queue WRITE (0x%X) OPERATION...\r\n", addr);
-		#endif
+#if AVR_I2C_DRV_DEBUG
+		printf("I2C Start Queue WRITE (0x%X) OPERATION...\r\n", addr);
+#endif
 		CBufWriteByte(&drv->_transmit_buf, addr & (~0x01));
 		CBufWrite(&drv->_transmit_buf, data, size);
 	}
@@ -67,9 +67,9 @@ static bool go_to_next_packet(i2c_drv_st* drv)
 			return false;
 		} else {
 			drv->_op_queue_elm_size = CBufReadByteNoRes(&drv->_transmit_buf);
-			#if AVR_I2C_DRV_DEBUG
-				printf("I2C IRQ Queue element size: %d bytes started\r\n", drv->_op_queue_elm_size);
-			#endif
+#if AVR_I2C_DRV_DEBUG
+			printf("I2C IRQ Queue element size: %d bytes started\r\n", drv->_op_queue_elm_size);
+#endif
 			return true;
 		}	
 	}
@@ -95,9 +95,9 @@ void i2c_drv_run(i2c_drv_st* drv)
 		uint8_t header[3];	
 		CBufRead(&drv->_receive_buf, header, 3);
 		CBufRead(&drv->_receive_buf, message_arena, header[1]);
-		#if AVR_I2C_DRV_DEBUG
-			printf("I2C Call handler for id: %d\r\n", header[2]);		
-		#endif
+#if AVR_I2C_DRV_DEBUG
+		printf("I2C Call handler for id: %d\r\n", header[2]);		
+#endif
 		i2c_drv_data_received_cmplt(drv, header[0], header[1], header[2], message_arena);
 		drv->_in_queue_elm_cnt--; // Only one message processed at a time
 	}
@@ -105,9 +105,9 @@ void i2c_drv_run(i2c_drv_st* drv)
 		if(drv->_op_queue_elm_cnt){
 			drv->_state = STATE_BUSY;
 			drv->_op_queue_elm_size = CBufReadByteNoRes(&drv->_transmit_buf); // Get data count
-			#if AVR_I2C_DRV_DEBUG
-				printf("I2C Queue element size: %d bytes started\r\n", drv->_op_queue_elm_size);
-			#endif
+#if AVR_I2C_DRV_DEBUG
+			printf("I2C Queue element size: %d bytes started\r\n", drv->_op_queue_elm_size);
+#endif
 			TWCR = (1<<TWEN)|(1<<TWIE)|(1<<TWINT)|(1<<TWSTA); // Start
 		}
 	}
@@ -121,21 +121,21 @@ void i2c_drv_irq_handler(i2c_drv_st* drv)
 		case TWI_REP_START: { // After start we need to send device addr			
 			TWDR = CBufReadByteNoRes(&drv->_transmit_buf);
 			drv->_prev_addr = TWDR & 0xFE;
-			#if AVR_I2C_DRV_DEBUG
-				if(TWDR & 0x01){
-					printf("I2C IRQ Start READ to 0x%X...\r\n",  TWDR);
-				} else {
-					printf("I2C IRQ Start WRITE to 0x%X...\r\n", TWDR);
-				}
-			#endif
+#if AVR_I2C_DRV_DEBUG
+			if(TWDR & 0x01){
+				printf("I2C IRQ Start READ to 0x%X...\r\n",  TWDR);
+			} else {
+				printf("I2C IRQ Start WRITE to 0x%X...\r\n", TWDR);
+			}
+#endif
 			TWCR = (1<<TWEN)|(1<<TWIE)|(1<<TWINT);
 			return;
 		}
 		
 		case TWI_MTX_ADR_ACK:   // Previous transmitted addr - is transmit addr, so we need trasmit data
-			#if AVR_I2C_DRV_DEBUG
+#if AVR_I2C_DRV_DEBUG
 			printf("I2C IRQ TX addr acknowledged SUCCESS\r\n");
-			#endif 
+#endif 
 			// Fall -->
 		case TWI_MTX_DATA_ACK:  // Previous trasmited data is ACK by device, trasmit next data if need or stop
 			if(drv->_op_queue_elm_size){
@@ -144,14 +144,14 @@ void i2c_drv_irq_handler(i2c_drv_st* drv)
 				drv->_op_queue_elm_size--;
 				drv->_state = STATE_TRANSMIT;
 			} else { // Start new transaction or stop if no data in  TX buffer
-				#if AVR_I2C_DRV_DEBUG
-					printf("I2C IRQ TX SUCCESS\r\n");
-				#endif
+#if AVR_I2C_DRV_DEBUG
+				printf("I2C IRQ TX SUCCESS\r\n");
+#endif
 				if(go_to_next_packet(drv)){// Have full packet in TX buf
 					drv->_state = STATE_BUSY;
-					#if AVR_I2C_DRV_DEBUG
-						printf("I2C IRQ Continue with same address\r\n");
-					#endif
+#if AVR_I2C_DRV_DEBUG
+				printf("I2C IRQ Continue with same address\r\n");
+#endif
 					TWCR = (1<<TWEN)|(1<<TWIE)|(1<<TWINT)|(1<<TWSTA); // Repeated start
 					return;
 				}
@@ -166,9 +166,9 @@ void i2c_drv_irq_handler(i2c_drv_st* drv)
 			uint8_t op_uuid = CBufReadByteNoRes(&drv->_transmit_buf);
 			CBufWriteByte(&drv->_receive_buf, op_uuid); // Read transaction UUID
 			drv->_state = STATE_RECEIVE;
-			#if AVR_I2C_DRV_DEBUG
-				printf("I2C IRQ RX addr acknowledged SUCCESS (UUID:%d)\r\n", op_uuid);
-			#endif
+#if AVR_I2C_DRV_DEBUG
+			printf("I2C IRQ RX addr acknowledged SUCCESS (UUID:%d)\r\n", op_uuid);
+#endif
 			// Fall -->				
 		case TWI_MRX_DATA_ACK:	
 			if(state == TWI_MRX_DATA_ACK){
@@ -185,13 +185,13 @@ void i2c_drv_irq_handler(i2c_drv_st* drv)
 		case TWI_MRX_DATA_NACK: 
 			CBufWriteByte(&drv->_receive_buf, TWDR); // Save last received byte
 			drv->_in_queue_elm_cnt++;
-			#if AVR_I2C_DRV_DEBUG
-				printf("I2C IRQ RX SUCCESS\r\n");
-			#endif
+#if AVR_I2C_DRV_DEBUG
+			printf("I2C IRQ RX SUCCESS\r\n");
+#endif
 			if(go_to_next_packet(drv)){// Have full packet in TX buf
-				#if AVR_I2C_DRV_DEBUG
-					printf("I2C IRQ Continue with same address\r\n");
-				#endif
+#if AVR_I2C_DRV_DEBUG
+				printf("I2C IRQ Continue with same address\r\n");
+#endif
 				drv->_state = STATE_BUSY;
 				TWCR = (1<<TWEN)|(1<<TWIE)|(1<<TWINT)|(1<<TWSTA); // Repeated start
 				return;
@@ -202,32 +202,32 @@ void i2c_drv_irq_handler(i2c_drv_st* drv)
 		
 		case TWI_ARB_LOST:
 			TWCR = (1<<TWEN)|(1<<TWIE)|(1<<TWINT)|(1<<TWSTA);
-			#if AVR_I2C_DRV_DEBUG
-				printf("I2C IRQ Arbiter lost\r\n");
-			#endif
+#if AVR_I2C_DRV_DEBUG
+			printf("I2C IRQ Arbiter lost\r\n");
+#endif
 			return;
 		
 		case TWI_MTX_ADR_NACK:// Target not response ACK on his addr
 			CBufMarkAsRead(&drv->_transmit_buf, drv->_op_queue_elm_size);
-			#if AVR_I2C_DRV_DEBUG
-				printf("I2C IRQ ERR tx address not acknowledged\r\n");
-			#endif
+#if AVR_I2C_DRV_DEBUG
+			printf("I2C IRQ ERR tx address not acknowledged\r\n");
+#endif
 			i2c_drv_target_not_recognize_clbk(drv, TWDR); 
 			break; //--> To error handler
 			
 		case TWI_MRX_ADR_NACK: 
 			CBufMarkAsRead(&drv->_transmit_buf, 1); // Read UUID from transmit buf
-			#if AVR_I2C_DRV_DEBUG
-				printf("I2C IRQ ERR rx address not acknowledged\r\n");
-			#endif
+#if AVR_I2C_DRV_DEBUG
+			printf("I2C IRQ ERR rx address not acknowledged\r\n");
+#endif
 			break;//--> To error handler
 			
 		case TWI_MTX_DATA_NACK: 
 			i2c_drv_target_data_nack(drv, drv->_op_queue_elm_size); 
 			CBufMarkAsRead(&drv->_transmit_buf, drv->_op_queue_elm_size); // Mark remaining bytes as read
-			#if AVR_I2C_DRV_DEBUG
-				printf("I2C IRQ ERR data not acknowledged\r\n");
-			#endif
+#if AVR_I2C_DRV_DEBUG
+			printf("I2C IRQ ERR data not acknowledged\r\n");
+#endif
 			break;//--> To error handler
 		
 		case TWI_BUS_ERROR:
@@ -240,9 +240,9 @@ void i2c_drv_irq_handler(i2c_drv_st* drv)
 			drv->_prev_addr = 0;
 			drv->_state = STATE_READY;
 			TWCR = (1<<TWINT); // Clear irq flag and turn off TWI
-			#if AVR_I2C_DRV_DEBUG
-				printf("I2C IRQ FATAL ERROR (Bus error)\r\n");
-			#endif
+#if AVR_I2C_DRV_DEBUG
+			printf("I2C IRQ FATAL ERROR (Bus error)\r\n");
+#endif
 			return;
 	}
 	/* Error handle */
