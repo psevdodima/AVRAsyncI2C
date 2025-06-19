@@ -1,0 +1,7 @@
+#ifndef APPLICATION_CONFIG_H_
+#define APPLICATION_CONFIG_H_
+
+#define MCU_MINOR			  3
+#define MCU_SUBMINOR		  4
+
+#endif /* APPLICATION_CONFIG_H_ */
